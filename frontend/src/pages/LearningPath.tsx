@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
 export default function LearningPath() {
@@ -41,9 +42,15 @@ export default function LearningPath() {
               </div>
               <div className="flex flex-wrap gap-2">
                 {section.lessons.map((lesson) => (
-                  <span key={lesson} className="px-3 py-1 bg-charcoal-800 rounded-full text-sm text-cream-200">
-                    {lesson}
-                  </span>
+                  section.locked ? (
+                    <span key={lesson} className="px-3 py-1 bg-charcoal-800/50 rounded-full text-sm text-charcoal-500" aria-disabled="true">
+                      {lesson}
+                    </span>
+                  ) : (
+                    <Link key={lesson} to={`/lesson/${encodeURIComponent(lesson)}`} className="px-3 py-1 bg-charcoal-800 rounded-full text-sm text-cream-200 hover:bg-orange-500 hover:text-white transition-colors">
+                      {lesson}
+                    </Link>
+                  )
                 ))}
               </div>
             </div>

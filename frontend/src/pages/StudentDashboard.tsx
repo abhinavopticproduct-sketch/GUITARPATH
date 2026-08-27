@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import { useAuthStore } from '@store/authStore';
 import { studentService } from '@services/studentService';
 
@@ -63,7 +64,7 @@ export default function StudentDashboard() {
               <div className="w-full bg-charcoal-700 rounded-full h-2 mb-4">
                 <div className="bg-orange-500 h-2 rounded-full" style={{ width: '65%' }}></div>
               </div>
-              <button className="btn-primary w-full">Continue</button>
+              <Link to="/lesson/Your%20First%20Chord%20%E2%80%94%20Em" className="btn-primary w-full text-center block">Continue</Link>
             </div>
           </div>
 
@@ -80,7 +81,7 @@ export default function StudentDashboard() {
               <div className="pt-4 border-t border-charcoal-800">
                 <div className="flex justify-between items-center">
                   <span className="text-cream-100 font-medium">Total: 22 minutes</span>
-                  <button className="btn-primary">Start Practice</button>
+                  <Link to="/lesson/Your%20First%20Chord%20%E2%80%94%20Em" className="btn-primary">Start Practice</Link>
                 </div>
               </div>
             </div>
