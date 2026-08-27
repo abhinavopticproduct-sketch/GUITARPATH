@@ -153,11 +153,11 @@ export class TimingAnalyzer {
     };
   }
 
-  calculateNoteDuration(detectedNotes: Array<{ startTime: number; endTime?: number }>, audioDuration: number): Array<{ note: string; duration: number }> {
+  calculateNoteDuration(detectedNotes: Array<{ note?: string; startTime: number; endTime?: number }>, audioDuration: number): Array<{ note: string; duration: number }> {
     return detectedNotes.map((note, index) => {
       const endTime = note.endTime || (index < detectedNotes.length - 1 ? detectedNotes[index + 1].startTime : audioDuration);
       return {
-        note: note.note,
+        note: note.note || '',
         duration: endTime - note.startTime,
       };
     });

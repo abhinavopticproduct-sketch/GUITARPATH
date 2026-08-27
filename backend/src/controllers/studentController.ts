@@ -30,7 +30,7 @@ export const getStudentAnalytics = async (req: Request, res: Response) => {
     });
     
     const averageScore = practiceSessions.length > 0
-      ? practiceSessions.reduce((sum, session) => sum + session.overallScore, 0) / practiceSessions.length
+      ? practiceSessions.reduce((sum: number, session: { overallScore: number }) => sum + session.overallScore, 0) / practiceSessions.length
       : 0;
     
     res.json({

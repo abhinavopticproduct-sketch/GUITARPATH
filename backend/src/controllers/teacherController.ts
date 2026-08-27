@@ -22,8 +22,8 @@ export const getTeacherStudents = async (req: Request, res: Response) => {
       },
     });
     
-    const students = classes.flatMap(cls => 
-      cls.members.map(member => member.student)
+    const students = classes.flatMap((cls: any) => 
+      cls.members.map((member: any) => member.student)
     );
     
     res.json({ success: true, data: students });

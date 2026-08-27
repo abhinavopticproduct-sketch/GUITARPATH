@@ -10,7 +10,7 @@ export class AudioProcessor {
   }
 
   getAudioData(): Float32Array {
-    this.analyser.getFloatTimeDomainData(this.dataArray);
+    this.analyser.getFloatTimeDomainData(this.dataArray as unknown as Float32Array<ArrayBuffer>);
     return this.dataArray;
   }
 

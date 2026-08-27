@@ -41,13 +41,13 @@ export default function LessonPage() {
                   {/* Chord diagram visualization */}
                   <div className="text-center text-cream-100 font-bold text-2xl mb-4">Em</div>
                   <div className="grid grid-cols-6 gap-1">
-                    {['e', 'B', 'G', 'D', 'A', 'E'].map((string, i) => (
+                    {['e', 'B', 'G', 'D', 'A', 'E'].map((string) => (
                       <div key={string} className="text-center text-cream-200 text-sm">{string}</div>
                     ))}
                     {Array.from({ length: 4 }).map((_, fret) => (
                       <React.Fragment key={fret}>
                         <div className="h-8 border-r border-charcoal-600 flex items-center justify-center">
-                          {fret === 0 && i === 0 && <div className="w-3 h-3 bg-orange-500 rounded-full" />}
+                          {fret === 0 && <div className="w-3 h-3 bg-orange-500 rounded-full" />}
                         </div>
                       </React.Fragment>
                     ))}
