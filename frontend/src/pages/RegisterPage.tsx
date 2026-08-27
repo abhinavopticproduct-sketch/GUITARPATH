@@ -34,7 +34,7 @@ export default function RegisterPage() {
         setAuth({ ...response.user, role: 'student', createdAt: timestamp, updatedAt: timestamp }, response.token);
         navigate('/onboarding');
       } catch (requestError: any) {
-        setError(requestError.response?.data?.error || 'Registration failed. Please try again.');
+        setError(requestError.response?.data?.error || requestError.message || 'Registration failed. Please try again.');
       }
     } else {
       setError('Please fill in all fields');
