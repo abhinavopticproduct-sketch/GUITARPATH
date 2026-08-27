@@ -22,7 +22,6 @@ export const getTeacherStudents = async (req: Request, res: Response) => {
             student: {
               include: {
                 user: true,
-                profile: true,
               },
             },
           },
