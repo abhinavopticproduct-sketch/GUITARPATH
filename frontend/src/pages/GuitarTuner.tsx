@@ -4,6 +4,7 @@ import { AudioProcessor, MicrophoneAccess, PitchDetector } from '@audio/index';
 
 export default function GuitarTuner() {
   const [selectedString, setSelectedString] = useState(1);
+  const [tuningMode, setTuningMode] = useState('Standard');
   const [frequency, setFrequency] = useState(0);
   const [confidence, setConfidence] = useState(0);
   const [isListening, setIsListening] = useState(false);
@@ -19,6 +20,12 @@ export default function GuitarTuner() {
     { name: 'B', frequency: 246.94 },
     { name: 'E', frequency: 329.63 },
   ];
+
+  const tuningOffsets: Record<string, number> = {
+    Standard: 0,
+    'Drop D': -2,
+    'Half-step down': -1,
+  };
 
   const selected = strings[selectedString];
 
@@ -63,7 +70,8 @@ export default function GuitarTuner() {
     setConfidence(0);
   };
 
-  const cents = frequency > 0 ? 1200 * Math.log2(frequency / selected.frequency) : 0;
+  const targetFrequency = selected.frequency * Math.pow(2, tuningOffsets[tuningMode] / 12);
+  const cents = frequency > 0 ? 1200 * Math.log2(frequency / targetFrequency) : 0;
   const isInTune = frequency > 0 && Math.abs(cents) < 5 && confidence > 0.5;
 
   return (
@@ -145,10 +153,12 @@ export default function GuitarTuner() {
           <div className="card">
             <h3 className="text-lg font-semibold text-cream-100 mb-4">Tuning Modes</h3>
             <div className="flex gap-4">
-              {['Standard', 'Drop D', 'Half-step down'].map((mode) => (
+              {Object.keys(tuningOffsets).map((mode) => (
                 <button
                   key={mode}
-                  className="btn-secondary flex-1"
+                  onClick={() => setTuningMode(mode)}
+                  aria-pressed={tuningMode === mode}
+                  className={`btn-secondary flex-1 ${tuningMode === mode ? 'border-orange-500 text-orange-400' : ''}`}
                 >
                   {mode}
                 </button>

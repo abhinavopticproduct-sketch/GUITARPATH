@@ -1,19 +1,34 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 
 export default function Metronome() {
   const [bpm, setBpm] = useState(60);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentBeat, setCurrentBeat] = useState(1);
+  const [signature, setSignature] = useState('4/4');
+  const [taps, setTaps] = useState<number[]>([]);
+
+  useEffect(() => {
+    if (!isPlaying) return;
+    const interval = window.setInterval(() => {
+      setCurrentBeat((beat) => beat >= Number(signature.split('/')[0]) ? 1 : beat + 1);
+    }, 60000 / bpm);
+    return () => window.clearInterval(interval);
+  }, [bpm, isPlaying, signature]);
 
   const togglePlay = () => {
     setIsPlaying(!isPlaying);
-    // In a real implementation, this would use Web Audio API for accurate timing
   };
 
   const tapTemp = () => {
-    // In a real implementation, this would calculate BPM from tap timing
-    setBpm(Math.floor(Math.random() * 40) + 60);
+    const now = performance.now();
+    const recentTaps = [...taps, now].filter((tap) => now - tap < 3000);
+    setTaps(recentTaps);
+    if (recentTaps.length > 1) {
+      const intervals = recentTaps.slice(1).map((tap, index) => tap - recentTaps[index]);
+      const averageInterval = intervals.reduce((sum, interval) => sum + interval, 0) / intervals.length;
+      setBpm(Math.min(250, Math.max(30, Math.round(60000 / averageInterval))));
+    }
   };
 
   return (
@@ -39,7 +54,7 @@ export default function Metronome() {
 
             {/* Beat visualization */}
             <div className="flex justify-center gap-4 mb-8">
-              {[1, 2, 3, 4].map((beat) => (
+              {Array.from({ length: Number(signature.split('/')[0]) }, (_, index) => index + 1).map((beat) => (
                 <div
                   key={beat}
                   className={`w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold transition-all ${
@@ -115,12 +130,14 @@ export default function Metronome() {
 
             {/* Time signature */}
             <div className="flex justify-center gap-4">
-              {['4/4', '3/4', '6/8'].map((signature) => (
+              {['4/4', '3/4', '6/8'].map((option) => (
                 <button
-                  key={signature}
+                  key={option}
+                  onClick={() => { setSignature(option); setCurrentBeat(1); }}
+                  aria-pressed={signature === option}
                   className="btn-secondary"
                 >
-                  {signature}
+                  {option}
                 </button>
               ))}
             </div>

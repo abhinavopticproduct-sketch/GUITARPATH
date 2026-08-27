@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import React from 'react';
@@ -5,6 +6,7 @@ import React from 'react';
 export default function LessonPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [quizComplete, setQuizComplete] = useState(false);
 
   return (
     <div className="min-h-screen bg-charcoal-950">
@@ -68,7 +70,10 @@ export default function LessonPage() {
             <div className="bg-charcoal-800 rounded-lg p-6">
               <h3 className="text-xl font-semibold text-cream-100 mb-4">Quiz</h3>
               <p className="text-cream-200/70 mb-4">Test your knowledge before completing the lesson.</p>
-              <button className="btn-secondary">Take Quiz</button>
+              <button onClick={() => setQuizComplete(true)} className="btn-secondary">
+                {quizComplete ? 'Quiz Complete' : 'Take Quiz'}
+              </button>
+              {quizComplete && <p className="text-green-400 text-sm mt-3">Correct. You are ready to practice.</p>}
             </div>
           </div>
         </motion.div>

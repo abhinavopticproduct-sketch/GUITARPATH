@@ -1,6 +1,10 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 
 export default function ChordLibrary() {
+  const navigate = useNavigate();
+  const [search, setSearch] = useState('');
   const chords = [
     { name: 'C', variation: 'Major', difficulty: 'beginner' },
     { name: 'Cm', variation: 'Minor', difficulty: 'intermediate' },
@@ -32,20 +36,22 @@ export default function ChordLibrary() {
             <input
               type="text"
               placeholder="Search chords..."
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
               className="input-field"
             />
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {chords.map((chord, index) => (
+            {chords.filter((chord) => `${chord.name} ${chord.variation}`.toLowerCase().includes(search.toLowerCase())).map((chord, index) => (
               <motion.div
                 key={`${chord.name}-${chord.variation}`}
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: index * 0.05 }}
-                className="card hover:border-orange-500 transition-colors cursor-pointer"
+                className="card hover:border-orange-500 transition-colors"
               >
-                <div className="text-center">
+                <button onClick={() => navigate(`/practice/${encodeURIComponent(chord.name)}`)} className="w-full text-center">
                   <div className="text-3xl font-bold text-cream-100 mb-1">{chord.name}</div>
                   <div className="text-cream-200/60 text-sm mb-2">{chord.variation}</div>
                   <span className={`px-2 py-1 rounded-full text-xs ${
@@ -53,7 +59,7 @@ export default function ChordLibrary() {
                   }`}>
                     {chord.difficulty}
                   </span>
-                </div>
+                </button>
               </motion.div>
             ))}
           </div>
