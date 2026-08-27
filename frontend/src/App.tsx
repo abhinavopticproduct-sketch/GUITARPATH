@@ -1,8 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import LandingPage from './pages/LandingPage'
-import LoginPage from './pages/LoginPage'
-import RegisterPage from './pages/RegisterPage'
 import StudentDashboard from './pages/StudentDashboard'
 import TeacherDashboard from './pages/TeacherDashboard'
 import AdminDashboard from './pages/AdminDashboard'
@@ -15,7 +13,6 @@ import Metronome from './pages/Metronome'
 import StudentProfile from './pages/StudentProfile'
 import TeacherProfile from './pages/TeacherProfile'
 import OnboardingFlow from './pages/OnboardingFlow'
-import { useAuthStore } from './store/authStore'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -27,16 +24,6 @@ const queryClient = new QueryClient({
 })
 
 function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode; allowedRoles?: string[] }) {
-  const { user, isAuthenticated } = useAuthStore()
-  
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />
-  }
-  
-  if (allowedRoles && user && !allowedRoles.includes(user.role)) {
-    return <Navigate to="/dashboard" replace />
-  }
-  
   return <>{children}</>
 }
 
@@ -47,8 +34,6 @@ function App() {
         <Routes>
           {/* Public routes */}
           <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
           
           {/* Student routes */}
           <Route 

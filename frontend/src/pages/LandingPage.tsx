@@ -21,10 +21,10 @@ export default function LandingPage() {
               Learn guitar through guided lessons, interactive practice, intelligent feedback, and real teacher support.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/register" className="btn-primary text-lg">
+              <Link to="/learning-path" className="btn-primary text-lg">
                 Start Learning
               </Link>
-              <Link to="/login" className="btn-secondary text-lg">
+              <Link to="/learning-path" className="btn-secondary text-lg">
                 Explore Courses
               </Link>
             </div>
@@ -111,7 +111,7 @@ export default function LandingPage() {
           <p className="text-xl text-white/90 mb-8">
             Join thousands of students learning guitar the smart way.
           </p>
-          <Link to="/register" className="bg-white text-orange-600 font-semibold py-4 px-8 rounded-lg hover:bg-cream-100 transition-all duration-200 transform hover:scale-105">
+          <Link to="/learning-path" className="bg-white text-orange-600 font-semibold py-4 px-8 rounded-lg hover:bg-cream-100 transition-all duration-200 transform hover:scale-105">
             Get Started Free
           </Link>
         </div>
