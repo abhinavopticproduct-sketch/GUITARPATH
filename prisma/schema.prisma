@@ -1,0 +1,402 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User models
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      UserRole @default(student)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  studentProfile StudentProfile?
+  teacherProfile TeacherProfile?
+
+  @@index([email])
+}
+
+enum UserRole {
+  student
+  teacher
+  admin
+}
+
+model StudentProfile {
+  id                   String  @id @default(cuid())
+  userId               String  @unique
+  user                 User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  level                String  @default("beginner")
+  xp                   Int     @default(0)
+  streak               Int     @default(0)
+  totalPracticeMinutes Int     @default(0)
+  guitarType           GuitarType @default(acoustic)
+  experienceLevel      ExperienceLevel @default(never)
+  learningGoal         String  @default("")
+  practiceGoal         Int     @default(10)
+  completedOnboarding  Boolean @default(false)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  progress             StudentProgress[]
+  practiceSessions     PracticeSession[]
+  classMemberships     ClassMember[]
+  achievements         StudentAchievement[]
+  assignmentStatuses   AssignmentStatusEnum[]
+  feedbackReceived     TeacherFeedback[]
+
+  @@index([userId])
+}
+
+enum GuitarType {
+  acoustic
+  electric
+  classical
+}
+
+enum ExperienceLevel {
+  never
+  little
+  beginner
+  intermediate
+}
+
+model TeacherProfile {
+  id             String  @id @default(cuid())
+  userId         String  @unique
+  user           User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bio            String  @default("")
+  experience     String  @default("")
+  specialization String  @default("")
+  studentCount   Int     @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  classes        Class[]
+  assignments    Assignment[]
+  feedbackGiven  TeacherFeedback[]
+
+  @@index([userId])
+}
+
+// Course and Lesson models
+model Course {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  level       String
+  thumbnail   String   @default("")
+  published   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  lessons     Lesson[]
+
+  @@index([published])
+}
+
+model Lesson {
+  id          String   @id @default(cuid())
+  courseId    String
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  title       String
+  description String
+  content     String   @default("")
+  videoUrl    String   @default("")
+  order       Int
+  duration    Int      @default(0)
+  chordDiagram Json?
+  exercise    Json?
+  quiz        Json?
+  published   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  progress    StudentProgress[]
+  practiceSessions PracticeSession[]
+
+  @@index([courseId])
+  @@index([published])
+}
+
+// Progress and Practice models
+model StudentProgress {
+  id          String   @id @default(cuid())
+  studentId   String
+  student     StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  lessonId    String
+  lesson      Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  completed   Boolean  @default(false)
+  progress    Int      @default(0)
+  lastAccessed DateTime @default(now())
+  completedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([studentId, lessonId])
+  @@index([studentId])
+  @@index([lessonId])
+}
+
+model PracticeSession {
+  id              String   @id @default(cuid())
+  studentId       String
+  student         StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  lessonId        String
+  lesson          Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  exerciseId      String
+  startTime       DateTime
+  endTime         DateTime?
+  duration        Int      @default(0)
+  accuracy        Float    @default(0)
+  pitchScore      Float    @default(0)
+  timingScore     Float    @default(0)
+  rhythmScore     Float    @default(0)
+  chordScore      Float    @default(0)
+  overallScore    Float    @default(0)
+  detectedNotes   String[] @default([])
+  expectedNotes   String[] @default([])
+  detectedChord   String?
+  expectedChord   String?
+  confidence      Float    @default(0)
+  createdAt       DateTime @default(now())
+
+  feedback        TeacherFeedback[]
+
+  @@index([studentId])
+  @@index([lessonId])
+}
+
+// Class and Assignment models
+model Class {
+  id          String   @id @default(cuid())
+  teacherId   String
+  teacher     TeacherProfile @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  name        String
+  description String   @default("")
+  schedule    String   @default("")
+  createdAt   DateTime @default(now())
+
+  members     ClassMember[]
+  assignments Assignment[]
+  liveClasses LiveClass[]
+
+  @@index([teacherId])
+}
+
+model ClassMember {
+  id        String   @id @default(cuid())
+  classId   String
+  class     Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
+  studentId String
+  student   StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  joinedAt  DateTime @default(now())
+
+  @@unique([classId, studentId])
+  @@index([classId])
+  @@index([studentId])
+}
+
+model Assignment {
+  id           String   @id @default(cuid())
+  teacherId    String
+  teacher      TeacherProfile @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  classId      String
+  class        Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
+  title        String
+  description  String
+  exerciseId   String
+  targetAccuracy Int
+  deadline     DateTime
+  createdAt    DateTime @default(now())
+
+  statuses     AssignmentStatusEnum[]
+
+  @@index([teacherId])
+  @@index([classId])
+}
+
+model AssignmentStatus {
+  id           String   @id @default(cuid())
+  assignmentId String
+  assignment   Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  studentId    String
+  student      StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  status       AssignmentStatusEnum @default(not_started)
+  submittedAt  DateTime?
+  score        Float?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([assignmentId, studentId])
+  @@index([assignmentId])
+  @@index([studentId])
+}
+
+enum AssignmentStatus {
+  not_started
+  in_progress
+  completed
+}
+
+// Feedback model
+model TeacherFeedback {
+  id              String   @id @default(cuid())
+  teacherId       String
+  teacher         TeacherProfile @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  studentId       String
+  student         StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  practiceSessionId String?
+  practiceSession PracticeSession? @relation(fields: [practiceSessionId], references: [id], onDelete: SetNull)
+  comment         String
+  createdAt       DateTime @default(now())
+
+  @@index([teacherId])
+  @@index([studentId])
+}
+
+// Achievement models
+model Achievement {
+  id            String   @id @default(cuid())
+  name          String
+  description   String
+  icon          String   @default("")
+  xpReward      Int      @default(0)
+  requirement   String
+  createdAt     DateTime @default(now())
+
+  studentAchievements StudentAchievement[]
+}
+
+model StudentAchievement {
+  id            String   @id @default(cuid())
+  studentId     String
+  student       StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  achievementId String
+  achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+  unlockedAt    DateTime @default(now())
+
+  @@unique([studentId, achievementId])
+  @@index([studentId])
+  @@index([achievementId])
+}
+
+// Notification model
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      NotificationType
+  title     String
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([read])
+}
+
+enum NotificationType {
+  assignment
+  feedback
+  class
+  lesson
+  reminder
+  achievement
+}
+
+// Live Class model
+model LiveClass {
+  id           String   @id @default(cuid())
+  classId      String
+  class        Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
+  teacherId    String
+  title        String
+  scheduledTime DateTime
+  duration     Int
+  meetingLink  String?
+  status       LiveClassStatus @default(scheduled)
+  createdAt    DateTime @default(now())
+
+  @@index([classId])
+  @@index([scheduledTime])
+}
+
+enum LiveClassStatus {
+  scheduled
+  live
+  ended
+}
+
+// Chord and Scale models
+model Chord {
+  id          String   @id @default(cuid())
+  name        String
+  variation   String
+  strings     String[]
+  frets       Json
+  fingers     Json
+  notes       String[]
+  difficulty  ChordDifficulty
+  createdAt   DateTime @default(now())
+
+  @@unique([name, variation])
+  @@index([difficulty])
+}
+
+enum ChordDifficulty {
+  beginner
+  intermediate
+  advanced
+}
+
+model Scale {
+  id         String   @id @default(cuid())
+  name       String
+  type       ScaleType
+  notes      String[]
+  intervals  Int[]
+  pattern    Int[]
+  createdAt  DateTime @default(now())
+
+  @@index([type])
+}
+
+enum ScaleType {
+  major
+  minor
+  pentatonic
+  blues
+}
+
+// Song model
+model Song {
+  id              String   @id @default(cuid())
+  title           String
+  artist          String
+  difficulty      SongDifficulty
+  bpm             Int
+  chords          String[]
+  chordProgression Json
+  strummingPattern String
+  duration        Int
+  thumbnail       String   @default("")
+  createdAt       DateTime @default(now())
+
+  @@index([difficulty])
+}
+
+enum SongDifficulty {
+  beginner
+  intermediate
+  advanced
+}

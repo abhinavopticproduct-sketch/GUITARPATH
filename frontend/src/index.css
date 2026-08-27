@@ -1,0 +1,138 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-charcoal-950 text-cream-100 antialiased;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-orange-500 hover:bg-orange-600 text-white font-medium py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-105 active:scale-95;
+  }
+  
+  .btn-secondary {
+    @apply bg-charcoal-700 hover:bg-charcoal-600 text-cream-100 font-medium py-3 px-6 rounded-lg transition-all duration-200 border border-charcoal-600;
+  }
+  
+  .btn-ghost {
+    @apply hover:bg-charcoal-800 text-cream-100 font-medium py-2 px-4 rounded-lg transition-all duration-200;
+  }
+  
+  .card {
+    @apply bg-charcoal-900 border border-charcoal-800 rounded-xl p-6 shadow-lg;
+  }
+  
+  .input-field {
+    @apply w-full bg-charcoal-800 border border-charcoal-700 rounded-lg px-4 py-3 text-cream-100 placeholder-charcoal-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200;
+  }
+  
+  .progress-ring {
+    @apply transform -rotate-90;
+  }
+  
+  .glass-effect {
+    @apply bg-charcoal-900/80 backdrop-blur-lg border border-charcoal-800;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  .animate-in {
+    animation: fadeIn 0.5s ease-out;
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-charcoal-900;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-charcoal-700 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-charcoal-600;
+}
+
+/* Microphone visualization */
+.microphone-pulse {
+  animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse-ring {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.1);
+  }
+}
+
+/* Loading skeleton */
+.skeleton {
+  @apply bg-charcoal-800 animate-pulse rounded;
+}
+
+/* Guitar string visualization */
+.guitar-string {
+  @apply bg-gradient-to-r from-cream-200 to-cream-400 rounded-full;
+}
+
+/* Fretboard styles */
+.fretboard {
+  @apply bg-wood-800 rounded-lg border-4 border-wood-900;
+}
+
+.fret {
+  @apply bg-charcoal-700;
+}
+
+.string {
+  @apply bg-cream-300;
+}
+
+/* Chord diagram styles */
+.chord-diagram {
+  @apply bg-charcoal-800 rounded-lg p-4 border border-charcoal-700;
+}
+
+/* Audio visualization bars */
+.audio-bar {
+  @apply bg-gradient-to-t from-orange-500 to-orange-400 rounded-full;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .mobile-nav {
+    @apply fixed bottom-0 left-0 right-0 bg-charcoal-900 border-t border-charcoal-800 z-50;
+  }
+}
