@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuthStore } from '@store/authStore';
+import { authService } from '@services/authService';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -14,22 +15,16 @@ export default function LoginPage() {
     e.preventDefault();
     setError('');
     
-    // Demo login - replace with actual API call
     if (email && password) {
-      // Mock user data
-      const mockUser = {
-        id: '1',
-        name: email.split('@')[0],
-        email,
-        role: 'student' as const,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-      
-      const mockToken = 'mock-jwt-token';
-      
-      setAuth(mockUser, mockToken);
-      navigate('/dashboard');
+      try {
+        const response = await authService.login({ email, password });
+        const timestamp = new Date().toISOString();
+        const user = { ...response.user, role: response.user.role as 'student' | 'teacher' | 'admin', createdAt: timestamp, updatedAt: timestamp };
+        setAuth(user, response.token);
+        navigate(user.role === 'teacher' ? '/teacher/dashboard' : user.role === 'admin' ? '/admin/dashboard' : '/dashboard');
+      } catch (requestError: any) {
+        setError(requestError.response?.data?.error || 'Login failed. Please check your credentials.');
+      }
     } else {
       setError('Please fill in all fields');
     }

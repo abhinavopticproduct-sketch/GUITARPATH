@@ -19,12 +19,20 @@ export const getStudentProgress = async (req: Request, res: Response) => {
 export const getStudentAnalytics = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
+    if ((req as any).user?.role === 'student' && (req as any).user.id !== id) {
+      return res.status(403).json({ success: false, error: 'You can only view your own analytics' });
+    }
+
     const profile = await prisma.studentProfile.findUnique({
       where: { userId: id },
     });
+
+    if (!profile) {
+      return res.status(404).json({ success: false, error: 'Student profile not found' });
+    }
     
     const practiceSessions = await prisma.practiceSession.findMany({
-      where: { studentId: id },
+      where: { studentId: profile.id },
       orderBy: { startTime: 'desc' },
       take: 50,
     });

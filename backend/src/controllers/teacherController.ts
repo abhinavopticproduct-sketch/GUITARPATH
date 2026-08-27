@@ -6,8 +6,16 @@ const prisma = new PrismaClient();
 export const getTeacherStudents = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
+    const teacher = await prisma.teacherProfile.findUnique({
+      where: { userId: id },
+    });
+
+    if (!teacher) {
+      return res.status(404).json({ success: false, error: 'Teacher profile not found' });
+    }
+
     const classes = await prisma.class.findMany({
-      where: { teacherId: id },
+      where: { teacherId: teacher.id },
       include: {
         members: {
           include: {
@@ -35,8 +43,16 @@ export const getTeacherStudents = async (req: Request, res: Response) => {
 export const getTeacherClasses = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
+    const teacher = await prisma.teacherProfile.findUnique({
+      where: { userId: id },
+    });
+
+    if (!teacher) {
+      return res.status(404).json({ success: false, error: 'Teacher profile not found' });
+    }
+
     const classes = await prisma.class.findMany({
-      where: { teacherId: id },
+      where: { teacherId: teacher.id },
       include: {
         _count: {
           select: { members: true },

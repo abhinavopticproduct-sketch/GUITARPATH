@@ -52,7 +52,7 @@ model StudentProfile {
   practiceSessions     PracticeSession[]
   classMemberships     ClassMember[]
   achievements         StudentAchievement[]
-  assignmentStatuses   AssignmentStatusEnum[]
+  assignmentStatuses   AssignmentStatus[]
   feedbackReceived     TeacherFeedback[]
 
   @@index([userId])
@@ -220,7 +220,7 @@ model Assignment {
   deadline     DateTime
   createdAt    DateTime @default(now())
 
-  statuses     AssignmentStatusEnum[]
+  statuses     AssignmentStatus[]
 
   @@index([teacherId])
   @@index([classId])
@@ -232,7 +232,7 @@ model AssignmentStatus {
   assignment   Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
   studentId    String
   student      StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  status       AssignmentStatusEnum @default(not_started)
+  status       AssignmentStatusValue @default(not_started)
   submittedAt  DateTime?
   score        Float?
   createdAt    DateTime @default(now())
@@ -243,7 +243,7 @@ model AssignmentStatus {
   @@index([studentId])
 }
 
-enum AssignmentStatus {
+enum AssignmentStatusValue {
   not_started
   in_progress
   completed

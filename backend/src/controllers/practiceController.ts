@@ -6,9 +6,17 @@ const prisma = new PrismaClient();
 export const startPractice = async (req: any, res: Response) => {
   try {
     const { lessonId, exerciseId } = req.body;
+    const student = await prisma.studentProfile.findUnique({
+      where: { userId: req.user.id },
+    });
+
+    if (!student) {
+      return res.status(404).json({ success: false, error: 'Student profile not found' });
+    }
+
     const session = await prisma.practiceSession.create({
       data: {
-        studentId: req.user.id,
+        studentId: student.id,
         lessonId,
         exerciseId,
         startTime: new Date(),
@@ -32,14 +40,29 @@ export const startPractice = async (req: any, res: Response) => {
 
 export const submitPracticeResult = async (req: any, res: Response) => {
   try {
-    const { sessionId } = req.params;
+    const { id } = req.params;
     const result = req.body;
+    const student = await prisma.studentProfile.findUnique({
+      where: { userId: req.user.id },
+    });
+
+    if (!student) {
+      return res.status(404).json({ success: false, error: 'Student profile not found' });
+    }
+
+    const existingSession = await prisma.practiceSession.findFirst({
+      where: { id, studentId: student.id },
+    });
+
+    if (!existingSession) {
+      return res.status(404).json({ success: false, error: 'Practice session not found' });
+    }
     
     const session = await prisma.practiceSession.update({
-      where: { id: sessionId },
+      where: { id },
       data: {
         endTime: new Date(),
-        duration: Math.floor((new Date().getTime() - new Date(result.startTime).getTime()) / 1000),
+        duration: Math.floor((new Date().getTime() - existingSession.startTime.getTime()) / 1000),
         accuracy: result.accuracy,
         pitchScore: result.pitchScore,
         timingScore: result.timingScore,

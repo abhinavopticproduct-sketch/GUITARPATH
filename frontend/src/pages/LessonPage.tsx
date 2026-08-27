@@ -1,9 +1,10 @@
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import React from 'react';
 
 export default function LessonPage() {
   const { id } = useParams();
+  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-charcoal-950">
@@ -60,7 +61,7 @@ export default function LessonPage() {
             <div className="bg-charcoal-800 rounded-lg p-6 mb-6">
               <h3 className="text-xl font-semibold text-cream-100 mb-4">Practice</h3>
               <p className="text-cream-200/70 mb-4">Try it yourself! Place your fingers and strum the chord.</p>
-              <button className="btn-primary">Start Practice</button>
+              <button onClick={() => navigate(`/practice/${id}`)} className="btn-primary">Start Practice</button>
             </div>
 
             {/* Quiz section */}

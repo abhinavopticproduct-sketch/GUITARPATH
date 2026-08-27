@@ -1,10 +1,15 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
+import { AudioProcessor, MicrophoneAccess, PitchDetector } from '@audio/index';
 
 export default function GuitarTuner() {
-  const [selectedString, setSelectedString] = useState('A');
-  const [frequency, setFrequency] = useState(110.2);
+  const [selectedString, setSelectedString] = useState(1);
+  const [frequency, setFrequency] = useState(0);
+  const [confidence, setConfidence] = useState(0);
   const [isListening, setIsListening] = useState(false);
+  const [error, setError] = useState('');
+  const microphone = useRef(new MicrophoneAccess());
+  const animationFrame = useRef<number>();
 
   const strings = [
     { name: 'E', frequency: 82.41 },
@@ -15,15 +20,51 @@ export default function GuitarTuner() {
     { name: 'E', frequency: 329.63 },
   ];
 
+  const selected = strings[selectedString];
+
+  useEffect(() => () => {
+    if (animationFrame.current) cancelAnimationFrame(animationFrame.current);
+    microphone.current.stopListening();
+  }, []);
+
   const startListening = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      setError('');
+      const permissionGranted = await microphone.current.requestPermission();
+      if (!permissionGranted) {
+        setError('Microphone permission is required.');
+        return;
+      }
+      const audioContext = await microphone.current.startListening();
+      const analyser = microphone.current.getAnalyser();
+      if (!analyser) return;
+
+      const processor = new AudioProcessor(analyser);
+      const detector = new PitchDetector(audioContext.sampleRate);
       setIsListening(true);
-      // In a real implementation, this would process audio
-    } catch (error) {
-      console.error('Microphone access denied');
+      const detect = () => {
+        const result = detector.detectPitchYIN(processor.getAudioData());
+        if (result.frequency > 0 && result.confidence > 0.2) {
+          setFrequency(result.frequency);
+          setConfidence(result.confidence);
+        }
+        animationFrame.current = requestAnimationFrame(detect);
+      };
+      detect();
+    } catch {
+      setError('We could not access the microphone.');
     }
   };
+
+  const stopListening = () => {
+    if (animationFrame.current) cancelAnimationFrame(animationFrame.current);
+    microphone.current.stopListening();
+    setIsListening(false);
+    setConfidence(0);
+  };
+
+  const cents = frequency > 0 ? 1200 * Math.log2(frequency / selected.frequency) : 0;
+  const isInTune = frequency > 0 && Math.abs(cents) < 5 && confidence > 0.5;
 
   return (
     <div className="min-h-screen bg-charcoal-950">
@@ -41,7 +82,7 @@ export default function GuitarTuner() {
         >
           <div className="card">
             <div className="text-center mb-8">
-              <h2 className="text-4xl font-display font-bold text-cream-100 mb-2">{selectedString}</h2>
+              <h2 className="text-4xl font-display font-bold text-cream-100 mb-2">{selected.name}</h2>
               <p className="text-cream-200/60">Select a string to tune</p>
             </div>
 
@@ -50,9 +91,9 @@ export default function GuitarTuner() {
               {strings.map((string, index) => (
                 <button
                   key={index}
-                  onClick={() => setSelectedString(string.name)}
+                  onClick={() => setSelectedString(index)}
                   className={`w-12 h-12 rounded-lg font-medium transition-all ${
-                    selectedString === string.name
+                    selectedString === index
                       ? 'bg-orange-500 text-white'
                       : 'bg-charcoal-800 text-cream-200 hover:bg-charcoal-700'
                   }`}
@@ -65,7 +106,7 @@ export default function GuitarTuner() {
             {/* Tuning display */}
             <div className="bg-charcoal-800 rounded-lg p-8 mb-8">
               <div className="text-center mb-6">
-                <div className="text-6xl font-bold text-cream-100 mb-2">{frequency.toFixed(1)} Hz</div>
+                <div className="text-6xl font-bold text-cream-100 mb-2">{frequency > 0 ? `${frequency.toFixed(1)} Hz` : '--'}</div>
                 <div className="text-cream-200/60">Frequency</div>
               </div>
 
@@ -74,26 +115,30 @@ export default function GuitarTuner() {
                 <div className="w-64 h-2 bg-charcoal-700 rounded-full relative">
                   <div 
                     className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-4 h-4 bg-orange-500 rounded-full"
-                    style={{ left: `${((frequency - 100) / 50) * 100}%` }}
+                    style={{ left: `${Math.min(100, Math.max(0, 50 + cents / 2))}%` }}
                   />
                 </div>
                 <span className="text-cream-200">Too High</span>
               </div>
 
-              {Math.abs(frequency - 110) < 2 && (
+              {isInTune && (
                 <div className="text-center text-green-400 text-xl font-medium">
                   ✓ In Tune
                 </div>
+              )}
+              {isListening && frequency > 0 && !isInTune && (
+                <div className="text-center text-orange-400 text-sm">{cents < 0 ? 'Tune up' : 'Tune down'} · Confidence {(confidence * 100).toFixed(0)}%</div>
               )}
             </div>
 
             {/* Microphone button */}
             <button
-              onClick={startListening}
+              onClick={isListening ? stopListening : startListening}
               className={`btn-primary w-full ${isListening ? 'bg-green-500' : ''}`}
             >
-              {isListening ? '🎙 Listening...' : '🎙 Allow Microphone'}
+              {isListening ? 'Stop Listening' : 'Allow Microphone'}
             </button>
+            {error && <p className="text-red-400 text-sm text-center mt-3">{error}</p>}
           </div>
 
           {/* Tuning modes */}

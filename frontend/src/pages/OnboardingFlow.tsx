@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { studentService } from '@services/studentService';
+import { useAuthStore } from '@store/authStore';
 
 type OnboardingData = {
   hasGuitar: boolean;
@@ -20,13 +22,25 @@ export default function OnboardingFlow() {
     practiceGoal: 10,
   });
   const navigate = useNavigate();
+  const { setStudentProfile } = useAuthStore();
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (step < 5) {
       setStep(step + 1);
     } else {
-      // Complete onboarding
-      navigate('/dashboard');
+      try {
+        const profile = await studentService.updateStudentProfile({
+          guitarType: data.guitarType,
+          experienceLevel: data.experienceLevel,
+          learningGoal: data.learningGoal,
+          practiceGoal: data.practiceGoal,
+          completedOnboarding: true,
+        });
+        setStudentProfile(profile);
+        navigate('/dashboard');
+      } catch {
+        navigate('/dashboard');
+      }
     }
   };
 

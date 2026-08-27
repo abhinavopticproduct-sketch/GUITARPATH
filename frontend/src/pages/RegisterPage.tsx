@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuthStore } from '@store/authStore';
+import { authService } from '@services/authService';
 
 export default function RegisterPage() {
   const [name, setName] = useState('');
@@ -26,21 +27,15 @@ export default function RegisterPage() {
       return;
     }
     
-    // Demo registration - replace with actual API call
     if (name && email && password) {
-      const mockUser = {
-        id: Date.now().toString(),
-        name,
-        email,
-        role: 'student' as const,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-      
-      const mockToken = 'mock-jwt-token';
-      
-      setAuth(mockUser, mockToken);
-      navigate('/onboarding');
+      try {
+        const response = await authService.register({ name, email, password });
+        const timestamp = new Date().toISOString();
+        setAuth({ ...response.user, role: 'student', createdAt: timestamp, updatedAt: timestamp }, response.token);
+        navigate('/onboarding');
+      } catch (requestError: any) {
+        setError(requestError.response?.data?.error || 'Registration failed. Please try again.');
+      }
     } else {
       setError('Please fill in all fields');
     }

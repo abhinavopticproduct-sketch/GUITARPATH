@@ -1,8 +1,18 @@
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useAuthStore } from '@store/authStore';
+import { studentService } from '@services/studentService';
 
 export default function StudentDashboard() {
   const { user } = useAuthStore();
+  const [analytics, setAnalytics] = useState<any>(null);
+
+  useEffect(() => {
+    if (!user) return;
+    studentService.getStudentAnalytics(user.id).then(setAnalytics).catch(() => setAnalytics(null));
+  }, [user]);
+
+  const averageScore = Math.round(analytics?.averageScore || 0);
 
   return (
     <div className="min-h-screen bg-charcoal-950">
@@ -80,13 +90,13 @@ export default function StudentDashboard() {
           <div className="card">
             <h3 className="text-xl font-semibold text-cream-100 mb-4">Progress</h3>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {['Chords', 'Rhythm', 'Strumming', 'Picking', 'Timing', 'Songs'].map((skill, index) => (
+              {['Chords', 'Rhythm', 'Strumming', 'Picking', 'Timing', 'Songs'].map((skill) => (
                 <div key={skill} className="bg-charcoal-800 rounded-lg p-4">
                   <div className="text-cream-200 text-sm mb-2">{skill}</div>
                   <div className="w-full bg-charcoal-700 rounded-full h-2">
                     <div 
                       className="bg-green-500 h-2 rounded-full" 
-                      style={{ width: `${Math.floor(Math.random() * 40) + 60}%` }}
+                      style={{ width: `${averageScore}%` }}
                     ></div>
                   </div>
                 </div>
