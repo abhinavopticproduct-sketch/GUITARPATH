@@ -33,7 +33,8 @@ function App() {
       <Router>
         <Routes>
           {/* Public routes */}
-          <Route path="/" element={<LandingPage />} />
+          <Route path="/" element={<StudentDashboard />} />
+          <Route path="/welcome" element={<LandingPage />} />
           
           {/* Student routes */}
           <Route 
@@ -110,6 +111,14 @@ function App() {
           />
           
           {/* Teacher routes */}
+          <Route 
+            path="/teacher" 
+            element={
+              <ProtectedRoute allowedRoles={['teacher', 'admin']}>
+                <TeacherDashboard />
+              </ProtectedRoute>
+            } 
+          />
           <Route 
             path="/teacher/dashboard" 
             element={
